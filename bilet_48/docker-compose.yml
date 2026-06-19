@@ -1,0 +1,31 @@
+version: "3.8"
+
+# Coregrafie: ProxyMicroservice apeleaza direct AgendaMicroservice (service chaining).
+# Nu exista orchestrator central — fiecare serviciu stie cu cine vorbeste.
+# Ordinea de pornire: AgendaMicroservice → ProxyMicroservice
+
+services:
+
+  agenda-microservice:
+    build: ./AgendaMicroservice
+    container_name: agenda_microservice
+    ports:
+      - "8081:8081"
+    networks:
+      - sd_network
+
+  proxy-microservice:
+    build: ./ProxyMicroservice
+    container_name: proxy_microservice
+    ports:
+      - "8080:8080"
+    environment:
+      - AGENDA_BASE_URL=http://agenda-microservice:8081
+    depends_on:
+      - agenda-microservice
+    networks:
+      - sd_network
+
+networks:
+  sd_network:
+    driver: bridge
